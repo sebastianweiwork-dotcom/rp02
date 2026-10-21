@@ -1,6 +1,9 @@
-遮挡电平=0, 输出目录=/home/rp02/ir_shots, 日志=/home/rp02/ir_shots/log.csv
-等待遮挡触发, Ctrl+C 退出
+usage: ir_trigger_camera.py [-h] --blocked-level {0,1} [--pull {up,down,off}]
+                            [--debounce-ms DEBOUNCE_MS]
+                            [--cooldown-ms COOLDOWN_MS] [--outdir OUTDIR]
+                            [--max-shots MAX_SHOTS] [--width WIDTH]
+                            [--height HEIGHT] [--jpeg-quality JPEG_QUALITY]
+                            [--af]
+ir_trigger_camera.py: error: the following arguments are required: --blocked-level
 
-[OK ] #1 shot_00001_20261021_113940_553.jpg | 触发->文件 1889.1ms (拍照 1856.5ms) | 155.4KB | CPU 15.7% | 内存 59.7% | 48.3→48.3°C | throttled=0x0
-[OK ] #2 shot_00002_20261021_113945_025.jpg | 触发->文件 1915.1ms (拍照 1889.8ms) | 154.4KB | CPU 13.0% | 内存 60.6% | 47.2→48.3°C | throttled=0x0
-[OK ] #3 shot_00003_20261021_113948_336.jpg | 触发->文件 1910.2ms (拍照 1885.8ms) | 155.1KB | CPU 11.1% | 内存 61.7% | 47.8→48.9°C | throttled=0x0
+
