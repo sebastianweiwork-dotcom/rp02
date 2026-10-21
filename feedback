@@ -1,9 +1,16 @@
-usage: ir_trigger_camera.py [-h] --blocked-level {0,1} [--pull {up,down,off}]
-                            [--debounce-ms DEBOUNCE_MS]
-                            [--cooldown-ms COOLDOWN_MS] [--outdir OUTDIR]
-                            [--max-shots MAX_SHOTS] [--width WIDTH]
-                            [--height HEIGHT] [--jpeg-quality JPEG_QUALITY]
-                            [--af]
-ir_trigger_camera.py: error: the following arguments are required: --blocked-level
+[0:32:43.610446735] [2713]  INFO Camera camera_manager.cpp:340 libcamera v0.7.2+rpt20260817
+[0:32:43.777944159] [2721]  INFO RPI pipeline_base.cpp:1133 Using configuration file '/usr/share/libcamera/pipeline/rpi/vc4/rpi_apps.yaml'
+[0:32:44.131722511] [2721]  INFO IPAProxy ipa_proxy.cpp:184 Using tuning file /usr/share/libcamera/ipa/rpi/vc4/ov5647.json
+[0:32:44.171484581] [2721]  INFO Camera camera_manager.cpp:223 Adding camera '/base/soc/i2c0mux/i2c@1/ov5647@36' for pipeline handler rpi/vc4
+[0:32:44.171860921] [2721]  INFO RPI vc4.cpp:445 Registered camera /base/soc/i2c0mux/i2c@1/ov5647@36 to Unicam device /dev/media0 and ISP device /dev/media1
+[0:32:44.195579856] [2713]  INFO Camera camera.cpp:1216 configuring streams: (0) 1296x972-RGB888/sRGB (1) 1296x972-SGBRG10_CSI2P/RAW
+[0:32:44.196676221] [2721]  INFO RPI vc4.cpp:620 Sensor: /base/soc/i2c0mux/i2c@1/ov5647@36 - Selected sensor format: 1296x972-SGBRG10_1X10/RAW - Selected unicam format: 1296x972-pGAA/RAW
+=== Picamera2 常驻触发拍照 ===
+blocked_level=0, GPIO17, outdir=/home/rp02/ir_shots_picam2
+size=1296x972, jpeg_quality=90
+等待遮挡触发，Ctrl+C 退出...
 
-
+[OK] #1 shot_00001_20261021_114900_634.jpg | 触发->文件 355.98ms (抓帧 25.62 + 编码 276.12 + 写盘 22.52) | 151.4KB | CPU 25.6% | MEM 70.1% | 47.2→47.2°C | throttled=0x0
+[OK] #2 shot_00002_20261021_114902_956.jpg | 触发->文件 173.9ms (抓帧 53.59 + 编码 74.06 + 写盘 23.8) | 151.3KB | CPU 18.3% | MEM 71.3% | 47.2→47.2°C | throttled=0x0
+[OK] #3 shot_00003_20261021_114904_154.jpg | 触发->文件 132.7ms (抓帧 17.7 + 编码 70.74 + 写盘 22.06) | 151.4KB | CPU 22.2% | MEM 71.4% | 47.2→47.2°C | throttled=0x0
+[OK] #4 shot_00004_20261021_114905_246.jpg | 触发->文件 148.74ms (抓帧 21.9 + 编码 69.09 + 写盘 35.85) | 151.7KB | CPU 10.7% | MEM 72.4% | 47.2→47.2°C | throttled=0x0
