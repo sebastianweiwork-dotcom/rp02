@@ -1,69 +1,30 @@
-共 12 组, 36 次遮挡。CSV: /home/rp02/ir_bench_results/bench_align_20261021_123357.csv
+共 12 组, 36 次遮挡。CSV: /home/rp02/ir_bench_results/bench_align_20261021_123946.csv
 
   (切换分辨率, 冷却 3 秒...)
-[1:17:48.956620101] [4364]  INFO Camera camera_manager.cpp:340 libcamera v0.7.2+rpt20260817
-[1:17:49.071117998] [4372]  INFO RPI pipeline_base.cpp:1133 Using configuration file '/usr/share/libcamera/pipeline/rpi/vc4/rpi_apps.yaml'
-[1:17:49.263690064] [4372]  INFO IPAProxy ipa_proxy.cpp:184 Using tuning file /usr/share/libcamera/ipa/rpi/vc4/ov5647.json
-[1:17:49.299038386] [4372]  INFO Camera camera_manager.cpp:223 Adding camera '/base/soc/i2c0mux/i2c@1/ov5647@36' for pipeline handler rpi/vc4
-[1:17:49.299196405] [4372]  INFO RPI vc4.cpp:445 Registered camera /base/soc/i2c0mux/i2c@1/ov5647@36 to Unicam device /dev/media0 and ISP device /dev/media1
-[1:17:49.320224098] [4364]  INFO Camera camera.cpp:1216 configuring streams: (0) 640x480-YUV420/SMPTE170M (1) 640x480-SGBRG10_CSI2P/RAW
-[1:17:49.321110026] [4372]  INFO RPI vc4.cpp:620 Sensor: /base/soc/i2c0mux/i2c@1/ov5647@36 - Selected sensor format: 640x480-SGBRG10_1X10/RAW - Selected unicam format: 640x480-pGAA/RAW
-=== 配置 1/12: 640x480_q70_sd | ring=24 wait=35ms fps≈53.3 ===
-  [1/36] 请遮挡 (本组第 1/3 次) ...
-      完成: 帧龄 -1.7ms | 取帧 26.4ms | 候选 24 帧 | CPU 11% | 48.9°C
-  [2/36] 请遮挡 (本组第 2/3 次) ...
-      完成: 帧龄 +4.2ms | 取帧 19.1ms | 候选 24 帧 | CPU 14% | 49.4°C
-  [3/36] 请遮挡 (本组第 3/3 次) ...
-      完成: 帧龄 +2.5ms | 取帧 20.8ms | 候选 24 帧 | CPU 12% | 48.9°C
-  (离线编码保存中...)
-=== 配置 2/12: 640x480_q90_sd | ring=24 wait=35ms fps≈45.5 ===
-  [4/36] 请遮挡 (本组第 1/3 次) ...
-      完成: 帧龄 +17.6ms | 取帧 5.9ms | 候选 24 帧 | CPU 15% | 49.4°C
-  [5/36] 请遮挡 (本组第 2/3 次) ...
-      完成: 帧龄 +8.9ms | 取帧 14.4ms | 候选 24 帧 | CPU 16% | 49.4°C
-  [6/36] 请遮挡 (本组第 3/3 次) ...
-      完成: 帧龄 +18.7ms | 取帧 4.8ms | 候选 24 帧 | CPU 15% | 49.4°C
-  (离线编码保存中...)
-=== 配置 3/12: 640x480_q70_tmpfs | ring=24 wait=35ms fps≈31.9 ===
-  [7/36] 请遮挡 (本组第 1/3 次) ...
-      完成: 帧龄 +16.7ms | 取帧 6.6ms | 候选 24 帧 | CPU 14% | 48.9°C
-  [8/36] 请遮挡 (本组第 2/3 次) ...
-      完成: 帧龄 -5.9ms | 取帧 29.3ms | 候选 24 帧 | CPU 21% | 49.4°C
-  [9/36] 请遮挡 (本组第 3/3 次) ...
-      完成: 帧龄 -10.9ms | 取帧 34.3ms | 候选 24 帧 | CPU 10% | 48.9°C
-  (离线编码保存中...)
-=== 配置 4/12: 640x480_q90_tmpfs | ring=24 wait=35ms fps≈31.8 ===
-  [10/36] 请遮挡 (本组第 1/3 次) ...
-      完成: 帧龄 +22.1ms | 取帧 3.0ms | 候选 24 帧 | CPU 14% | 49.4°C
-  [11/36] 请遮挡 (本组第 2/3 次) ...
-      完成: 帧龄 -9.3ms | 取帧 32.5ms | 候选 24 帧 | CPU 15% | 48.9°C
-  [12/36] 请遮挡 (本组第 3/3 次) ...
-      完成: 帧龄 +16.0ms | 取帧 7.3ms | 候选 24 帧 | CPU 15% | 48.9°C
-  (离线编码保存中...)
-  (切换分辨率, 冷却 3 秒...)
-[1:18:12.518680514] [4376]  INFO Camera camera_manager.cpp:340 libcamera v0.7.2+rpt20260817
-[1:18:12.631963730] [4394]  INFO RPI pipeline_base.cpp:1133 Using configuration file '/usr/share/libcamera/pipeline/rpi/vc4/rpi_apps.yaml'
-[1:18:12.659896192] [4394]  INFO IPAProxy ipa_proxy.cpp:184 Using tuning file /usr/share/libcamera/ipa/rpi/vc4/ov5647.json
-[1:18:12.683915415] [4394]  INFO Camera camera_manager.cpp:223 Adding camera '/base/soc/i2c0mux/i2c@1/ov5647@36' for pipeline handler rpi/vc4
-[1:18:12.684266244] [4394]  INFO RPI vc4.cpp:445 Registered camera /base/soc/i2c0mux/i2c@1/ov5647@36 to Unicam device /dev/media0 and ISP device /dev/media1
-[1:18:12.709280248] [4376]  INFO Camera camera.cpp:1216 configuring streams: (0) 1296x972-YUV420/Rec709 (1) 1296x972-SGBRG10_CSI2P/RAW
-[1:18:12.710352945] [4394]  INFO RPI vc4.cpp:620 Sensor: /base/soc/i2c0mux/i2c@1/ov5647@36 - Selected sensor format: 1296x972-SGBRG10_1X10/RAW - Selected unicam format: 1296x972-pGAA/RAW
-=== 配置 5/12: 1296x972_q70_sd | ring=8 wait=45ms fps≈37.4 ===
-  [13/36] 请遮挡 (本组第 1/3 次) ...
-      完成: 帧龄 +8.7ms | 取帧 30.1ms | 候选 8 帧 | CPU 29% | 49.9°C
-  [14/36] 请遮挡 (本组第 2/3 次) ...
-      完成: 帧龄 +27.2ms | 取帧 11.6ms | 候选 8 帧 | CPU 20% | 49.4°C
-  [15/36] 请遮挡 (本组第 3/3 次) ...
-      完成: 帧龄 +21.8ms | 取帧 16.7ms | 候选 8 帧 | CPU 22% | 49.4°C
-  (离线编码保存中...)
+[1:23:37.311671903] [4526]  INFO Camera camera_manager.cpp:340 libcamera v0.7.2+rpt20260817
+[1:23:37.382023443] [4534]  INFO RPI pipeline_base.cpp:1133 Using configuration file '/usr/share/libcamera/pipeline/rpi/vc4/rpi_apps.yaml'
+[1:23:37.538002711] [4534]  INFO IPAProxy ipa_proxy.cpp:184 Using tuning file /usr/share/libcamera/ipa/rpi/vc4/ov5647.json
+[1:23:37.572948344] [4534]  INFO Camera camera_manager.cpp:223 Adding camera '/base/soc/i2c0mux/i2c@1/ov5647@36' for pipeline handler rpi/vc4
+[1:23:37.573104078] [4534]  INFO RPI vc4.cpp:445 Registered camera /base/soc/i2c0mux/i2c@1/ov5647@36 to Unicam device /dev/media0 and ISP device /dev/media1
 Traceback (most recent call last):
-  File "/home/rp02/rp02/ir_prebuffer_bench.py", line 321, in <module>
+  File "/home/rp02/rp02/ir_prebuffer_bench.py", line 465, in <module>
     main()
     ~~~~^^
-  File "/home/rp02/rp02/ir_prebuffer_bench.py", line 258, in main
-    data = yuv420_to_jpeg(p["arr"], w, h, q)
-  File "/home/rp02/rp02/ir_prebuffer_bench.py", line 124, in yuv420_to_jpeg
-    u = arr[h:h + h // 4, :].reshape(h // 2, w // 2)
-ValueError: cannot reshape array of size 326592 into shape (486,648)
+  File "/home/rp02/rp02/ir_prebuffer_bench.py", line 268, in main
+    cfg = cam.create_video_configuration(
+        main={"size": (w, h), "format": "YUV420"},
+        buffer_count=4,
+        controls=controls if controls else None
+    )
+  File "/usr/lib/python3/dist-packages/picamera2/picamera2.py", line 939, in create_video_configuration
+    controls = {
+               ~
+        "NoiseReductionMode": libcamera.controls.draft.NoiseReductionModeEnum.Fast,
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        "FrameDurationLimits": (33333, 33333),
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    } | controls
+    ~~^~~~~~~~~~
+TypeError: unsupported operand type(s) for |: 'dict' and 'NoneType'
 
 
