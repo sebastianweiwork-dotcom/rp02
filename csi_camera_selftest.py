@@ -7,7 +7,7 @@ import time
 import shutil
 import subprocess
 
-OUT_FILE = "/tmp/csi_selftest.jpg"
+OUT_FILE = "/home/rp02/Pictures/csi_selftest.jpg"
 
 def run(cmd, timeout=15):
     p = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)

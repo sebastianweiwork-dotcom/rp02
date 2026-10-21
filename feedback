@@ -1,41 +1,6 @@
-=== CSI 相机自检开始 ===
+遮挡电平=0, 输出目录=/home/rp02/ir_shots, 日志=/home/rp02/ir_shots/log.csv
+等待遮挡触发, Ctrl+C 退出
 
-[1/3] 检测相机 ...
-Available cameras
------------------
-0 : ov5647 [2592x1944 10-bit GBRG] (/base/soc/i2c0mux/i2c@1/ov5647@36)
-    Modes: 'SGBRG10_CSI2P' : 640x480 [62.50 fps - (16, 0)/2560x1920 crop]
-                             1296x972 [46.34 fps - (0, 0)/2592x1944 crop]
-                             1920x1080 [32.81 fps - (348, 434)/1928x1080 crop]
-                             2592x1944 [15.63 fps - (0, 0)/2592x1944 crop]
-
-[2/3] 拍照测试 ...
-[0:15:24.700510102] [2178]  INFO Camera camera_manager.cpp:340 libcamera v0.7.2+rpt20260817
-[0:15:24.750055840] [2181]  INFO RPI pipeline_base.cpp:1133 Using configuration file '/usr/share/libcamera/pipeline/rpi/vc4/rpi_apps.yaml'
-[0:15:24.841617564] [2181]  INFO IPAProxy ipa_proxy.cpp:184 Using tuning file /usr/share/libcamera/ipa/rpi/vc4/ov5647.json
-[0:15:24.860805908] [2181]  INFO Camera camera_manager.cpp:223 Adding camera '/base/soc/i2c0mux/i2c@1/ov5647@36' for pipeline handler rpi/vc4
-[0:15:24.860913410] [2181]  INFO RPI vc4.cpp:445 Registered camera /base/soc/i2c0mux/i2c@1/ov5647@36 to Unicam device /dev/media0 and ISP device /dev/media1
-Mode selection for 1296:972:12:P
-    SGBRG10_CSI2P,640x480/0 - Score: 3296
-    SGBRG10_CSI2P,1296x972/0 - Score: 1000
-    SGBRG10_CSI2P,1920x1080/0 - Score: 1349.67
-    SGBRG10_CSI2P,2592x1944/0 - Score: 1567
-Stream configuration adjusted
-[0:15:25.488372471] [2178]  INFO Camera camera.cpp:1216 configuring streams: (0) 1296x972-YUV420/sYCC (1) 1296x972-SGBRG10_CSI2P/RAW
-[0:15:25.489162437] [2181]  INFO RPI vc4.cpp:620 Sensor: /base/soc/i2c0mux/i2c@1/ov5647@36 - Selected sensor format: 1296x972-SGBRG10_1X10/RAW - Selected unicam format: 1296x972-pGAA/RAW
-Mode selection for 2592:1944:12:P
-    SGBRG10_CSI2P,640x480/0 - Score: 7832
-    SGBRG10_CSI2P,1296x972/0 - Score: 5536
-    SGBRG10_CSI2P,1920x1080/0 - Score: 4238.67
-    SGBRG10_CSI2P,2592x1944/0 - Score: 1000
-Stream configuration adjusted
-[0:15:26.754200420] [2178]  INFO Camera camera.cpp:1216 configuring streams: (0) 2592x1944-YUV420/sYCC (1) 2592x1944-SGBRG10_CSI2P/RAW
-[0:15:26.755731912] [2181]  INFO RPI vc4.cpp:620 Sensor: /base/soc/i2c0mux/i2c@1/ov5647@36 - Selected sensor format: 2592x1944-SGBRG10_1X10/RAW - Selected unicam format: 2592x1944-pGAA/RAW
-Still capture image received
-
-[3/3] 验证图片 ...
-[ OK ] 输出文件: /tmp/csi_selftest.jpg (622011 bytes)
-
-✅ CSI 相机工作正常（已成功拍照）。
-你可以查看: /tmp/csi_selftest.jpg
-
+[OK ] #1 shot_00001_20261021_113940_553.jpg | 触发->文件 1889.1ms (拍照 1856.5ms) | 155.4KB | CPU 15.7% | 内存 59.7% | 48.3→48.3°C | throttled=0x0
+[OK ] #2 shot_00002_20261021_113945_025.jpg | 触发->文件 1915.1ms (拍照 1889.8ms) | 154.4KB | CPU 13.0% | 内存 60.6% | 47.2→48.3°C | throttled=0x0
+[OK ] #3 shot_00003_20261021_113948_336.jpg | 触发->文件 1910.2ms (拍照 1885.8ms) | 155.1KB | CPU 11.1% | 内存 61.7% | 47.8→48.9°C | throttled=0x0
