@@ -1,145 +1,79 @@
-共 12 组配置, 36 次遮挡。结果: /home/rp02/ir_bench_results/bench_20261021_120212.csv
+共 12 组配置, 36 次遮挡触发。
+每次触发保存 3 张: prev / closest / next
+结果 CSV: /home/rp02/ir_bench_results/bench_align_20261021_122255.csv
 
-[0:46:00.465190183] [2899]  INFO Camera camera_manager.cpp:340 libcamera v0.7.2+rpt20260817
-[0:46:00.683060852] [2906]  INFO RPI pipeline_base.cpp:1133 Using configuration file '/usr/share/libcamera/pipeline/rpi/vc4/rpi_apps.yaml'
-[0:46:01.044353022] [2906]  INFO IPAProxy ipa_proxy.cpp:184 Using tuning file /usr/share/libcamera/ipa/rpi/vc4/ov5647.json
-[0:46:01.082022468] [2906]  INFO Camera camera_manager.cpp:223 Adding camera '/base/soc/i2c0mux/i2c@1/ov5647@36' for pipeline handler rpi/vc4
-[0:46:01.082189392] [2906]  INFO RPI vc4.cpp:445 Registered camera /base/soc/i2c0mux/i2c@1/ov5647@36 to Unicam device /dev/media0 and ISP device /dev/media1
-[0:46:01.136595107] [2899]  INFO Camera camera.cpp:1216 configuring streams: (0) 640x480-RGB888/SMPTE170M/Rec709/None/Full (1) 640x480-SGBRG10_CSI2P/RAW
-[0:46:01.137787691] [2906]  INFO RPI vc4.cpp:620 Sensor: /base/soc/i2c0mux/i2c@1/ov5647@36 - Selected sensor format: 640x480-SGBRG10_1X10/RAW - Selected unicam format: 640x480-pGAA/RAW
-
-=== 配置 1/12: 640x480_q70_sd (环缓冲帧率约 26.8fps) ===
-  [1/36] 请遮挡对射 (本组第 1/3 次) ...
-      完成: 取帧 10.3ms | 帧龄 21.4ms | 编码 232.9ms | 写盘 1.3ms | 总 244.5ms | 24.9KB | CPU 13.6% | 47.2°C | 0x0
-  [2/36] 请遮挡对射 (本组第 2/3 次) ...
-      完成: 取帧 10.05ms | 帧龄 44.9ms | 编码 80.3ms | 写盘 1.4ms | 总 91.8ms | 24.9KB | CPU 24.2% | 47.8°C | 0x0
-  [3/36] 请遮挡对射 (本组第 3/3 次) ...
-      完成: 取帧 10.29ms | 帧龄 29.5ms | 编码 75.9ms | 写盘 1.4ms | 总 87.6ms | 25.0KB | CPU 23.8% | 47.8°C | 0x0
-
-=== 配置 2/12: 640x480_q90_sd (环缓冲帧率约 40.1fps) ===
-  [4/36] 请遮挡对射 (本组第 1/3 次) ...
-      完成: 取帧 10.27ms | 帧龄 36.7ms | 编码 80.1ms | 写盘 1.5ms | 总 91.8ms | 50.0KB | CPU 26.6% | 48.3°C | 0x0
-  [5/36] 请遮挡对射 (本组第 2/3 次) ...
-      完成: 取帧 10.28ms | 帧龄 41.4ms | 编码 96.3ms | 写盘 1.1ms | 总 107.7ms | 50.0KB | CPU 21.1% | 47.2°C | 0x0
-  [6/36] 请遮挡对射 (本组第 3/3 次) ...
-      完成: 取帧 10.08ms | 帧龄 48.9ms | 编码 75.8ms | 写盘 2.1ms | 总 88.0ms | 49.9KB | CPU 18.7% | 47.2°C | 0x0
-
-=== 配置 3/12: 640x480_q70_tmpfs (环缓冲帧率约 35.1fps) ===
-  [7/36] 请遮挡对射 (本组第 1/3 次) ...
-      完成: 取帧 10.28ms | 帧龄 38.4ms | 编码 74.5ms | 写盘 1.4ms | 总 86.3ms | 24.9KB | CPU 25.3% | 48.3°C | 0x0
-  [8/36] 请遮挡对射 (本组第 2/3 次) ...
-      完成: 取帧 10.02ms | 帧龄 23.1ms | 编码 75.1ms | 写盘 1.7ms | 总 86.8ms | 25.0KB | CPU 20.8% | 47.2°C | 0x0
-  [9/36] 请遮挡对射 (本组第 3/3 次) ...
-      完成: 取帧 10.31ms | 帧龄 26.0ms | 编码 74.7ms | 写盘 1.9ms | 总 87.0ms | 24.8KB | CPU 18.4% | 47.8°C | 0x0
-
-=== 配置 4/12: 640x480_q90_tmpfs (环缓冲帧率约 38.3fps) ===
-  [10/36] 请遮挡对射 (本组第 1/3 次) ...
-      完成: 取帧 10.11ms | 帧龄 51.3ms | 编码 76.4ms | 写盘 1.7ms | 总 88.3ms | 49.8KB | CPU 26.5% | 48.3°C | 0x0
-  [11/36] 请遮挡对射 (本组第 2/3 次) ...
-      完成: 取帧 10.29ms | 帧龄 39.7ms | 编码 75.8ms | 写盘 1.7ms | 总 87.7ms | 49.9KB | CPU 19.2% | 48.3°C | 0x0
-  [12/36] 请遮挡对射 (本组第 3/3 次) ...
-      完成: 取帧 10.26ms | 帧龄 28.9ms | 编码 75.0ms | 写盘 1.0ms | 总 86.2ms | 49.9KB | CPU 24.6% | 48.3°C | 0x0
-[0:46:14.102278370] [2910]  INFO Camera camera_manager.cpp:340 libcamera v0.7.2+rpt20260817
-[0:46:14.179732957] [2925]  INFO RPI pipeline_base.cpp:1133 Using configuration file '/usr/share/libcamera/pipeline/rpi/vc4/rpi_apps.yaml'
-[0:46:14.197529470] [2925]  INFO IPAProxy ipa_proxy.cpp:184 Using tuning file /usr/share/libcamera/ipa/rpi/vc4/ov5647.json
-[0:46:14.218833786] [2925]  INFO Camera camera_manager.cpp:223 Adding camera '/base/soc/i2c0mux/i2c@1/ov5647@36' for pipeline handler rpi/vc4
-[0:46:14.219225862] [2925]  INFO RPI vc4.cpp:445 Registered camera /base/soc/i2c0mux/i2c@1/ov5647@36 to Unicam device /dev/media0 and ISP device /dev/media1
-[0:46:14.247711095] [2910]  INFO Camera camera.cpp:1216 configuring streams: (0) 1296x972-RGB888/Rec709/Rec709/None/Full (1) 1296x972-SGBRG10_CSI2P/RAW
-[0:46:14.248755556] [2925]  INFO RPI vc4.cpp:620 Sensor: /base/soc/i2c0mux/i2c@1/ov5647@36 - Selected sensor format: 1296x972-SGBRG10_1X10/RAW - Selected unicam format: 1296x972-pGAA/RAW
-
-=== 配置 5/12: 1296x972_q70_sd (环缓冲帧率约 26.2fps) ===
-  [13/36] 请遮挡对射 (本组第 1/3 次) ...
-      完成: 取帧 10.51ms | 帧龄 62.3ms | 编码 311.9ms | 写盘 1.7ms | 总 324.1ms | 69.1KB | CPU 27.7% | 48.3°C | 0x0
-  [14/36] 请遮挡对射 (本组第 2/3 次) ...
-      完成: 取帧 10.53ms | 帧龄 62.0ms | 编码 309.7ms | 写盘 1.7ms | 总 321.9ms | 69.0KB | CPU 34.0% | 48.3°C | 0x0
-  [15/36] 请遮挡对射 (本组第 3/3 次) ...
-      完成: 取帧 10.16ms | 帧龄 44.7ms | 编码 335.1ms | 写盘 1.7ms | 总 347.0ms | 69.1KB | CPU 37.5% | 48.9°C | 0x0
-
-=== 配置 6/12: 1296x972_q90_sd (环缓冲帧率约 32.1fps) ===
-  [16/36] 请遮挡对射 (本组第 1/3 次) ...
-      完成: 取帧 10.16ms | 帧龄 59.6ms | 编码 317.1ms | 写盘 1.3ms | 总 328.6ms | 151.5KB | CPU 35.9% | 48.9°C | 0x0
-  [17/36] 请遮挡对射 (本组第 2/3 次) ...
-      完成: 取帧 10.17ms | 帧龄 40.9ms | 编码 298.7ms | 写盘 1.6ms | 总 310.5ms | 151.6KB | CPU 36.9% | 48.3°C | 0x0
-  [18/36] 请遮挡对射 (本组第 3/3 次) ...
-      完成: 取帧 10.32ms | 帧龄 50.3ms | 编码 299.2ms | 写盘 1.8ms | 总 311.4ms | 151.2KB | CPU 25.7% | 48.3°C | 0x0
-
-=== 配置 7/12: 1296x972_q70_tmpfs (环缓冲帧率约 33.7fps) ===
-  [19/36] 请遮挡对射 (本组第 1/3 次) ...
-      完成: 取帧 10.25ms | 帧龄 48.2ms | 编码 293.1ms | 写盘 1.1ms | 总 304.5ms | 68.8KB | CPU 29.7% | 49.4°C | 0x0
-  [20/36] 请遮挡对射 (本组第 2/3 次) ...
-      完成: 取帧 10.43ms | 帧龄 65.3ms | 编码 294.7ms | 写盘 1.4ms | 总 306.6ms | 69.0KB | CPU 36.9% | 49.4°C | 0x0
-  [21/36] 请遮挡对射 (本组第 3/3 次) ...
-      完成: 取帧 10.31ms | 帧龄 56.0ms | 编码 293.9ms | 写盘 1.3ms | 总 305.6ms | 68.9KB | CPU 27.1% | 48.9°C | 0x0
-
-=== 配置 8/12: 1296x972_q90_tmpfs (环缓冲帧率约 33.7fps) ===
-  [22/36] 请遮挡对射 (本组第 1/3 次) ...
-      完成: 取帧 10.14ms | 帧龄 72.1ms | 编码 298.9ms | 写盘 1.5ms | 总 310.6ms | 150.8KB | CPU 38.3% | 49.4°C | 0x0
-  [23/36] 请遮挡对射 (本组第 2/3 次) ...
-      完成: 取帧 10.42ms | 帧龄 69.8ms | 编码 302.4ms | 写盘 1.0ms | 总 313.9ms | 151.6KB | CPU 38.2% | 49.4°C | 0x0
-  [24/36] 请遮挡对射 (本组第 3/3 次) ...
-      完成: 取帧 10.26ms | 帧龄 60.4ms | 编码 302.4ms | 写盘 1.2ms | 总 313.9ms | 151.4KB | CPU 33.0% | 49.9°C | 0x0
-[0:46:27.156221535] [2929]  INFO Camera camera_manager.cpp:340 libcamera v0.7.2+rpt20260817
-[0:46:27.223550884] [2944]  INFO RPI pipeline_base.cpp:1133 Using configuration file '/usr/share/libcamera/pipeline/rpi/vc4/rpi_apps.yaml'
-[0:46:27.241036778] [2944]  INFO IPAProxy ipa_proxy.cpp:184 Using tuning file /usr/share/libcamera/ipa/rpi/vc4/ov5647.json
-[0:46:27.261639701] [2944]  INFO Camera camera_manager.cpp:223 Adding camera '/base/soc/i2c0mux/i2c@1/ov5647@36' for pipeline handler rpi/vc4
-[0:46:27.261786730] [2944]  INFO RPI vc4.cpp:445 Registered camera /base/soc/i2c0mux/i2c@1/ov5647@36 to Unicam device /dev/media0 and ISP device /dev/media1
-[0:46:27.286479165] [2929]  INFO Camera camera.cpp:1216 configuring streams: (0) 1920x1080-RGB888/Rec709/Rec709/None/Full (1) 1920x1080-SGBRG10_CSI2P/RAW
-[0:46:27.287791278] [2944]  INFO RPI vc4.cpp:620 Sensor: /base/soc/i2c0mux/i2c@1/ov5647@36 - Selected sensor format: 1920x1080-SGBRG10_1X10/RAW - Selected unicam format: 1920x1080-pGAA/RAW
-
-=== 配置 9/12: 1920x1080_q70_sd (环缓冲帧率约 25.6fps) ===
-  [25/36] 请遮挡对射 (本组第 1/3 次) ...
-      完成: 取帧 14.52ms | 帧龄 122.7ms | 编码 3992.3ms | 写盘 43.9ms | 总 4050.8ms | 92.1KB | CPU 90.1% | 52.1°C | 0x0
-  [26/36] 请遮挡对射 (本组第 2/3 次) ...
-      完成: 取帧 10.56ms | 帧龄 391.4ms | 编码 808.5ms | 写盘 2.2ms | 总 821.3ms | 91.8KB | CPU 86.2% | 52.6°C | 0x0
-  [27/36] 请遮挡对射 (本组第 3/3 次) ...
-      完成: 取帧 10.56ms | 帧龄 70.8ms | 编码 569.3ms | 写盘 1.5ms | 总 581.4ms | 91.9KB | CPU 36.5% | 52.1°C | 0x0
-
-=== 配置 10/12: 1920x1080_q90_sd (环缓冲帧率约 30.4fps) ===
-  [28/36] 请遮挡对射 (本组第 1/3 次) ...
-      完成: 取帧 10.04ms | 帧龄 60.6ms | 编码 544.7ms | 写盘 2.4ms | 总 557.1ms | 241.5KB | CPU 61.1% | 52.6°C | 0x0
-  [29/36] 请遮挡对射 (本组第 2/3 次) ...
-      完成: 取帧 11.31ms | 帧龄 181.8ms | 编码 592.9ms | 写盘 6.0ms | 总 610.2ms | 241.9KB | CPU 51.2% | 52.6°C | 0x0
-  [30/36] 请遮挡对射 (本组第 3/3 次) ...
-      完成: 取帧 10.25ms | 帧龄 70.0ms | 编码 525.3ms | 写盘 6.0ms | 总 541.5ms | 241.6KB | CPU 43.7% | 52.1°C | 0x0
-
-=== 配置 11/12: 1920x1080_q70_tmpfs (环缓冲帧率约 28.6fps) ===
-  [31/36] 请遮挡对射 (本组第 1/3 次) ...
-      完成: 取帧 10.53ms | 帧龄 73.3ms | 编码 624.5ms | 写盘 0.8ms | 总 635.9ms | 92.1KB | CPU 53.6% | 52.6°C | 0x0
-  [32/36] 请遮挡对射 (本组第 2/3 次) ...
-      完成: 取帧 10.15ms | 帧龄 66.2ms | 编码 582.7ms | 写盘 0.6ms | 总 593.5ms | 92.1KB | CPU 40.7% | 52.1°C | 0x0
-  [33/36] 请遮挡对射 (本组第 3/3 次) ...
-      完成: 取帧 10.55ms | 帧龄 87.3ms | 编码 497.5ms | 写盘 0.7ms | 总 508.7ms | 92.1KB | CPU 59.0% | 52.1°C | 0x0
-
-=== 配置 12/12: 1920x1080_q90_tmpfs (环缓冲帧率约 29.2fps) ===
-  [34/36] 请遮挡对射 (本组第 1/3 次) ...
-      完成: 取帧 10.25ms | 帧龄 67.3ms | 编码 475.2ms | 写盘 1.9ms | 总 487.4ms | 241.5KB | CPU 45.3% | 52.6°C | 0x0
-  [35/36] 请遮挡对射 (本组第 2/3 次) ...
-      完成: 取帧 10.39ms | 帧龄 67.6ms | 编码 571.0ms | 写盘 1.3ms | 总 582.7ms | 241.2KB | CPU 42.6% | 52.1°C | 0x0
-  [36/36] 请遮挡对射 (本组第 3/3 次) ...
-      完成: 取帧 10.09ms | 帧龄 61.4ms | 编码 577.9ms | 写盘 1.5ms | 总 589.5ms | 241.7KB | CPU 65.4% | 53.2°C | 0x0
-
-==============================================================================
-汇总 (每组 3 张的平均值)
-==============================================================================
-配置                        取帧ms    帧龄ms     落盘均值     落盘最大   fps     KB
-640x480_q70_tmpfs         10.2    29.2     86.7     87.0  30.3     25
-640x480_q90_tmpfs         10.2    40.0     87.4     88.3  31.7     50
-640x480_q90_sd            10.2    42.3     95.8    107.7  31.9     50
-640x480_q70_sd            10.2    31.9    141.3    244.5  34.8     25
-1296x972_q70_tmpfs        10.3    56.5    305.6    306.6  30.3     69
-1296x972_q90_tmpfs        10.3    67.4    312.8    313.9  30.0    151
-1296x972_q90_sd           10.2    50.3    316.8    328.6  30.2    151
-1296x972_q70_sd           10.4    56.3    331.0    347.0  27.9     69
-1920x1080_q90_tmpfs       10.2    65.4    553.2    589.5  31.2    241
-1920x1080_q90_sd          10.5   104.1    569.6    610.2  28.6    242
-1920x1080_q70_tmpfs       10.4    75.6    579.4    635.9  29.9     92
-1920x1080_q70_sd          11.9   195.0   1817.8   4050.8  22.4     92
-
-最快 触发->拿到帧 : 640x480_q70_tmpfs (10.2ms)
-最快 触发->文件   : 640x480_q70_tmpfs (86.7ms)
-画面最贴近触发瞬间: 640x480_q70_tmpfs (帧龄 29.2ms)
-
-详细数据: /home/rp02/ir_bench_results/bench_20261021_120212.csv
-照片: SD卡 ~/ir_bench, tmpfs /dev/shm/ir_bench (tmpfs 重启即丢, 请及时拷走)
-
+[1:06:43.270949731] [3872]  INFO Camera camera_manager.cpp:340 libcamera v0.7.2+rpt20260817
+[1:06:43.414316292] [3881]  INFO RPI pipeline_base.cpp:1133 Using configuration file '/usr/share/libcamera/pipeline/rpi/vc4/rpi_apps.yaml'
+[1:06:43.745565377] [3881]  INFO IPAProxy ipa_proxy.cpp:184 Using tuning file /usr/share/libcamera/ipa/rpi/vc4/ov5647.json
+[1:06:43.780938701] [3881]  INFO Camera camera_manager.cpp:223 Adding camera '/base/soc/i2c0mux/i2c@1/ov5647@36' for pipeline handler rpi/vc4
+[1:06:43.781091408] [3881]  INFO RPI vc4.cpp:445 Registered camera /base/soc/i2c0mux/i2c@1/ov5647@36 to Unicam device /dev/media0 and ISP device /dev/media1
+[1:06:43.802362495] [3872]  INFO Camera camera.cpp:1216 configuring streams: (0) 640x480-RGB888/SMPTE170M/Rec709/None/Full (1) 640x480-SGBRG10_CSI2P/RAW
+[1:06:43.803345092] [3881]  INFO RPI vc4.cpp:620 Sensor: /base/soc/i2c0mux/i2c@1/ov5647@36 - Selected sensor format: 640x480-SGBRG10_1X10/RAW - Selected unicam format: 640x480-pGAA/RAW
+=== 配置 1/12: 640x480_q70_sd | ring=32, wait=35ms, fps≈36.5 ===
+  [1/36] 请遮挡（本组第 1/3 次）...
+      完成: closest帧龄 -0.8ms | 取帧指标 29.6ms | 候选32帧 | fps≈49.9
+  [2/36] 请遮挡（本组第 2/3 次）...
+      完成: closest帧龄 14.2ms | 取帧指标 13.2ms | 候选32帧 | fps≈69.9
+  [3/36] 请遮挡（本组第 3/3 次）...
+      完成: closest帧龄 -3.6ms | 取帧指标 30.9ms | 候选32帧 | fps≈51.5
+=== 配置 2/12: 640x480_q90_sd | ring=32, wait=35ms, fps≈40.9 ===
+  [4/36] 请遮挡（本组第 1/3 次）...
+      完成: closest帧龄 -10.9ms | 取帧指标 38.0ms | 候选32帧 | fps≈74.7
+  [5/36] 请遮挡（本组第 2/3 次）...
+      完成: closest帧龄 5.8ms | 取帧指标 21.7ms | 候选32帧 | fps≈61.2
+  [6/36] 请遮挡（本组第 3/3 次）...
+      完成: closest帧龄 -15.0ms | 取帧指标 42.4ms | 候选32帧 | fps≈69.4
+=== 配置 3/12: 640x480_q70_tmpfs | ring=32, wait=35ms, fps≈49.1 ===
+  [7/36] 请遮挡（本组第 1/3 次）...
+      完成: closest帧龄 -11.0ms | 取帧指标 38.1ms | 候选32帧 | fps≈59.7
+  [8/36] 请遮挡（本组第 2/3 次）...
+      完成: closest帧龄 4.3ms | 取帧指标 23.1ms | 候选32帧 | fps≈55.4
+  [9/36] 请遮挡（本组第 3/3 次）...
+      完成: closest帧龄 10.2ms | 取帧指标 18.8ms | 候选32帧 | fps≈43.7
+=== 配置 4/12: 640x480_q90_tmpfs | ring=32, wait=35ms, fps≈37.6 ===
+  [10/36] 请遮挡（本组第 1/3 次）...
+      完成: closest帧龄 -9.1ms | 取帧指标 36.3ms | 候选32帧 | fps≈51.3
+  [11/36] 请遮挡（本组第 2/3 次）...
+      完成: closest帧龄 16.2ms | 取帧指标 11.3ms | 候选32帧 | fps≈58.8
+  [12/36] 请遮挡（本组第 3/3 次）...
+      完成: closest帧龄 15.7ms | 取帧指标 11.7ms | 候选32帧 | fps≈60.4
+[1:07:10.401383430] [3885]  INFO Camera camera_manager.cpp:340 libcamera v0.7.2+rpt20260817
+[1:07:10.527015413] [3927]  INFO RPI pipeline_base.cpp:1133 Using configuration file '/usr/share/libcamera/pipeline/rpi/vc4/rpi_apps.yaml'
+[1:07:10.613532702] [3927]  INFO IPAProxy ipa_proxy.cpp:184 Using tuning file /usr/share/libcamera/ipa/rpi/vc4/ov5647.json
+[1:07:10.636768718] [3927]  INFO Camera camera_manager.cpp:223 Adding camera '/base/soc/i2c0mux/i2c@1/ov5647@36' for pipeline handler rpi/vc4
+[1:07:10.636910383] [3927]  INFO RPI vc4.cpp:445 Registered camera /base/soc/i2c0mux/i2c@1/ov5647@36 to Unicam device /dev/media0 and ISP device /dev/media1
+[1:07:10.714146027] [3885]  INFO Camera camera.cpp:1216 configuring streams: (0) 1296x972-RGB888/Rec709/Rec709/None/Full (1) 1296x972-SGBRG10_CSI2P/RAW
+[1:07:10.715507319] [3927]  INFO RPI vc4.cpp:620 Sensor: /base/soc/i2c0mux/i2c@1/ov5647@36 - Selected sensor format: 1296x972-SGBRG10_1X10/RAW - Selected unicam format: 1296x972-pGAA/RAW
+=== 配置 5/12: 1296x972_q70_sd | ring=12, wait=45ms, fps≈28.4 ===
+  [13/36] 请遮挡（本组第 1/3 次）...
+      完成: closest帧龄 60.5ms | 取帧指标 -20.3ms | 候选12帧 | fps≈20.0
+  [14/36] 请遮挡（本组第 2/3 次）...
+      完成: closest帧龄 102.6ms | 取帧指标 -37.3ms | 候选12帧 | fps≈8.0
+  [15/36] 请遮挡（本组第 3/3 次）...
+      完成: closest帧龄 0.2ms | 取帧指标 39.2ms | 候选12帧 | fps≈21.2
+=== 配置 6/12: 1296x972_q90_sd | ring=12, wait=45ms, fps≈18.9 ===
+  [16/36] 请遮挡（本组第 1/3 次）...
+      完成: closest帧龄 1.0ms | 取帧指标 39.7ms | 候选12帧 | fps≈17.7
+  [17/36] 请遮挡（本组第 2/3 次）...
+      完成: closest帧龄 -5.2ms | 取帧指标 44.9ms | 候选12帧 | fps≈23.4
+  [18/36] 请遮挡（本组第 3/3 次）...
+      完成: closest帧龄 61.6ms | 取帧指标 6.4ms | 候选12帧 | fps≈17.3
+=== 配置 7/12: 1296x972_q70_tmpfs | ring=12, wait=45ms, fps≈15.8 ===
+  [19/36] 请遮挡（本组第 1/3 次）...
+      完成: closest帧龄 26.9ms | 取帧指标 30.4ms | 候选12帧 | fps≈22.4
+  [20/36] 请遮挡（本组第 2/3 次）...
+      完成: closest帧龄 559.7ms | 取帧指标 -114.5ms | 候选12帧 | fps≈8.4
+  [21/36] 请遮挡（本组第 3/3 次）...
+      完成: closest帧龄 29.6ms | 取帧指标 10.9ms | 候选12帧 | fps≈17.1
+=== 配置 8/12: 1296x972_q90_tmpfs | ring=12, wait=45ms, fps≈16.0 ===
+  [22/36] 请遮挡（本组第 1/3 次）...
+      完成: closest帧龄 8.1ms | 取帧指标 31.2ms | 候选12帧 | fps≈14.9
+  [23/36] 请遮挡（本组第 2/3 次）...
+[1:07:57.555477162] [3927]  WARN V4L2 v4l2_videodevice.cpp:2096 /dev/video0[18:cap]: Dequeue timer of 1000000.00us has expired!
+[1:07:57.662849563] [3927] ERROR RPI pipeline_base.cpp:1371 Camera frontend has timed out!
+[1:07:57.663037270] [3927] ERROR RPI pipeline_base.cpp:1372 Please check that your camera sensor connector is attached securely.
+[1:07:57.663082322] [3927] ERROR RPI pipeline_base.cpp:1373 Alternatively, try another cable and/or sensor.
+      完成: closest帧龄 422.3ms | 取帧指标 -358.6ms | 候选12帧 | fps≈31.9
+  [24/36] 请遮挡（本组第 3/3 次）...
+      完成: closest帧龄 9888.4ms | 取帧指标 -9824.8ms | 候选12帧 | fps≈31.9
 
