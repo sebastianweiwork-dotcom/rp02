@@ -12,10 +12,10 @@
 
 硬件：
 - IR 接收器 OUT -> GPIO17 (物理 11)
-- 供电按你当前接法
 
 运行：
-  sudo python3 ir_trigger_picamera2_daemon.py --blocked-level 0
+  sudo python3 ir_trigger_camera.py
+  （默认 --blocked-level 0）
 """
 
 import os
@@ -45,7 +45,7 @@ FIELDS = [
     "cpu_mhz", "throttled", "disk_free_mb"
 ]
 
-# ---------- 系统指标 ----------
+
 def read_cpu_times():
     with open("/proc/stat", "r", encoding="utf-8") as f:
         parts = f.readline().split()[1:]
@@ -54,12 +54,14 @@ def read_cpu_times():
     total = sum(vals)
     return idle, total
 
+
 def cpu_percent(prev):
     idle, total = read_cpu_times()
     p_idle, p_total = prev
     dt = total - p_total
     pct = 100.0 * (1 - (idle - p_idle) / dt) if dt > 0 else 0.0
     return pct, (idle, total)
+
 
 def mem_info():
     d = {}
@@ -72,12 +74,14 @@ def mem_info():
     used_pct = (100.0 * (total_mb - avail_mb) / total_mb) if total_mb else 0.0
     return total_mb, avail_mb, used_pct
 
+
 def proc_rss_mb():
     with open("/proc/self/status", "r", encoding="utf-8") as f:
         for line in f:
             if line.startswith("VmRSS:"):
                 return int(line.split()[1]) / 1024
     return 0.0
+
 
 def cpu_temp():
     try:
@@ -86,12 +90,14 @@ def cpu_temp():
     except Exception:
         return float("nan")
 
+
 def cpu_mhz():
     try:
         with open("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq", "r", encoding="utf-8") as f:
             return int(f.read().strip()) / 1000.0
     except Exception:
         return float("nan")
+
 
 def throttled():
     if not shutil.which("vcgencmd"):
@@ -101,19 +107,20 @@ def throttled():
             ["vcgencmd", "get_throttled"],
             capture_output=True, text=True, timeout=2
         ).stdout.strip()
-        # 例如: throttled=0x0
         return out.split("=")[-1] if "=" in out else out
     except Exception:
         return "n/a"
 
+
 def load1():
     return os.getloadavg()[0]
 
-# ---------- 主逻辑 ----------
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--blocked-level", type=int, choices=[0, 1], required=True,
-                    help="遮挡时 GPIO 电平: 0 或 1")
+    # 改为可选参数，默认 0
+    ap.add_argument("--blocked-level", type=int, choices=[0, 1], default=0,
+                    help="遮挡时 GPIO 电平: 0 或 1（默认 0）")
     ap.add_argument("--pull", choices=["up", "down", "off"], default="up",
                     help="GPIO 内部上下拉")
     ap.add_argument("--debounce-ms", type=float, default=20.0,
@@ -141,13 +148,11 @@ def main():
     csv_path = os.path.join(args.outdir, "log.csv")
     create_header = not os.path.exists(csv_path)
 
-    # GPIO 初始化
     GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BCM)
     pud = {"up": GPIO.PUD_UP, "down": GPIO.PUD_DOWN, "off": GPIO.PUD_OFF}[args.pull]
     GPIO.setup(PIN, GPIO.IN, pull_up_down=pud)
 
-    # 相机常驻初始化
     picam2 = Picamera2()
     config = picam2.create_still_configuration(
         main={"size": (args.width, args.height), "format": "RGB888"},
@@ -155,12 +160,11 @@ def main():
     )
     picam2.configure(config)
     picam2.start()
-    time.sleep(0.3)  # 让 AE/AWB 稍微稳定
+    time.sleep(0.3)
 
-    # 如果支持自动对焦可选设置（OV5647 通常是固定焦，不会生效）
     if args.af:
         try:
-            picam2.set_controls({"AfMode": 2})  # Continuous
+            picam2.set_controls({"AfMode": 2})
         except Exception:
             pass
 
@@ -179,19 +183,16 @@ def main():
     last_end = 0.0
 
     try:
-        # 启动时等待“未遮挡”，防止开机即触发
         while GPIO.input(PIN) == blocked:
             time.sleep(0.005)
 
         while True:
-            # 等待遮挡沿
             if GPIO.input(PIN) != blocked:
                 time.sleep(0.001)
                 continue
 
             t_detect = time.monotonic()
 
-            # 消抖：遮挡持续 debounce_s 才触发
             stable = True
             t_db_end = t_detect + debounce_s
             while time.monotonic() < t_db_end:
@@ -203,7 +204,6 @@ def main():
                 continue
 
             if time.monotonic() - last_end < cooldown_s:
-                # 等待这次遮挡结束后继续
                 while GPIO.input(PIN) == blocked:
                     time.sleep(0.001)
                 continue
@@ -214,16 +214,13 @@ def main():
             filename = f"shot_{seq:05d}_{ts}.jpg"
             filepath = os.path.join(args.outdir, filename)
 
-            # 指标前状态
-            _, cpu_prev = cpu_percent(cpu_prev)   # 刷新基线
+            _, cpu_prev = cpu_percent(cpu_prev)
             temp_before = cpu_temp()
 
-            # 1) 抓帧
             t0 = time.monotonic()
-            frame = picam2.capture_array("main")  # ndarray (H,W,3), RGB888
+            frame = picam2.capture_array("main")
             t1 = time.monotonic()
 
-            # 2) JPEG 编码
             t2 = time.monotonic()
             img = Image.fromarray(frame)
             bio = io.BytesIO()
@@ -231,7 +228,6 @@ def main():
             jpeg_bytes = bio.getvalue()
             t3 = time.monotonic()
 
-            # 3) 写文件
             t4 = time.monotonic()
             with open(filepath, "wb") as wf:
                 wf.write(jpeg_bytes)
@@ -239,10 +235,8 @@ def main():
                 os.fsync(wf.fileno())
             t5 = time.monotonic()
 
-            # 拍照期间统计漏触发（再次 clear->blocked）
             missed = 0
             prev = GPIO.input(PIN)
-            # very short observation window after capture, for bounce/retrigger visibility
             obs_end = time.monotonic() + 0.03
             while time.monotonic() < obs_end:
                 cur = GPIO.input(PIN)
@@ -251,7 +245,6 @@ def main():
                 prev = cur
                 time.sleep(0.001)
 
-            # 等待本次遮挡结束（一次遮挡只拍一张）
             while GPIO.input(PIN) == blocked:
                 time.sleep(0.001)
             t_release = time.monotonic()
@@ -260,7 +253,6 @@ def main():
             temp_after = cpu_temp()
             cpu_pct, cpu_prev = cpu_percent(cpu_prev)
             _, mem_avail, mem_used_pct = mem_info()
-
             size_kb = os.path.getsize(filepath) / 1024.0
 
             row = {
