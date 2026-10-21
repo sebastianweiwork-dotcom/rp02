@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-预缓冲时间对齐基准 (Pi Zero 2 W + OV5647 + 红外对射 GPIO17) - 稳健版(修复YUV stride)
+预缓冲时间对齐基准 (Pi Zero 2 W + OV5647 + 红外对射 GPIO17) - 稳健版(修复YUV stride + controls None)
 
 目标：
 - 优先优化“画面时间尽可能接近触发瞬间”
@@ -17,6 +17,8 @@
 
 运行：
   sudo python3 ir_prebuffer_bench.py --blocked-level 0
+可选：
+  --force-fps 60    # 尝试提高帧率（实际受传感器模式上限限制）
 """
 
 import os
@@ -261,14 +263,17 @@ def main():
                 time.sleep(3)
 
                 cam = Picamera2()
+
                 controls = {}
                 if args.force_fps > 0:
-                    controls["FrameRate"] = args.force_fps
+                    # 使用FrameDurationLimits覆盖Picamera2默认30fps
+                    dur = int(1_000_000 / args.force_fps)
+                    controls["FrameDurationLimits"] = (dur, dur)
 
                 cfg = cam.create_video_configuration(
                     main={"size": (w, h), "format": "YUV420"},
                     buffer_count=4,
-                    controls=controls if controls else None
+                    controls=controls  # 必须是dict，不能传None
                 )
                 cam.configure(cfg)
                 cam.start()
@@ -432,7 +437,6 @@ def main():
         print("无有效数据。")
         return
 
-    # 按配置汇总
     groups = {}
     for r in valid_rows:
         groups.setdefault(r["config"], []).append(r)
