@@ -1,36 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-预缓冲时间对齐基准测试 (Pi Zero 2 W + OV5647 + 红外对射 GPIO17)
+预缓冲时间对齐基准 (Pi Zero 2 W + OV5647 + 红外对射 GPIO17) - 稳健版
 
-目标：
-- 优先优化“画面时间尽可能接近触发瞬间”
-- 触发后不直接取 latest()，而是等待一小段时间，再从缓冲里按时间戳选最接近触发时刻的帧
-- 每次触发保存三张: prev / closest / next（围绕 closest）
+实时路径: 检测触发 -> 等待 N ms -> 在缓冲里按 SensorTimestamp 选最近帧(只复制引用)
+离线路径: 触发结束后再把选中帧编码为 JPEG 并写盘(不干扰采帧)
 
-矩阵:
-  分辨率: 640x480, 1296x972, 1920x1080
-  JPEG质量: 70, 90
-  输出介质: SD卡, tmpfs
-  每组触发: 3 次
-总计: 12组 * 3 = 36 次触发（每次保存3张图）
-
-运行:
-  sudo python3 ir_prebuffer_bench.py --blocked-level 0
+矩阵: 分辨率(640x480, 1296x972, 1920x1080) x 质量(70,90) x 存储(sd,tmpfs) x 3 次遮挡
+运行: sudo python3 ir_prebuffer_bench.py --blocked-level 0
 """
-
-import os
-import io
-import csv
-import time
-import shutil
-import argparse
-import threading
-import subprocess
-import statistics
+import os, io, csv, time, gc, argparse, threading, subprocess, statistics
 from collections import deque
 from datetime import datetime
 
+import numpy as np
 import RPi.GPIO as GPIO
 from picamera2 import Picamera2
 from PIL import Image
@@ -39,7 +22,10 @@ PIN = 17
 RESOLUTIONS = [(640, 480), (1296, 972), (1920, 1080)]
 QUALITIES = [70, 90]
 STORAGES = [("sd", os.path.expanduser("~/ir_bench")), ("tmpfs", "/dev/shm/ir_bench")]
-SHOTS_PER_CONFIG = 3
+SHOTS = 3
+RING = {(640, 480): 24, (1296, 972): 8, (1920, 1080): 6}
+WAIT_MS = {(640, 480): 35.0, (1296, 972): 45.0, (1920, 1080): 55.0}
+STALE_MS = 100.0  # 触发时最新帧比触发早超过该值 -> 无效
 
 
 def now_ns():
@@ -47,239 +33,184 @@ def now_ns():
 
 
 def cpu_times():
-    with open("/proc/stat", "r", encoding="utf-8") as f:
-        vals = list(map(int, f.readline().split()[1:]))
-    idle = vals[3] + (vals[4] if len(vals) > 4 else 0)
-    total = sum(vals)
-    return idle, total
+    with open("/proc/stat") as f:
+        v = list(map(int, f.readline().split()[1:]))
+    return v[3] + (v[4] if len(v) > 4 else 0), sum(v)
 
 
 def cpu_pct(prev):
-    idle, total = cpu_times()
-    dt = total - prev[1]
-    pct = 100.0 * (1 - (idle - prev[0]) / dt) if dt > 0 else 0.0
-    return pct, (idle, total)
+    i, t = cpu_times()
+    dt = t - prev[1]
+    return (100.0 * (1 - (i - prev[0]) / dt) if dt > 0 else 0.0), (i, t)
 
 
-def mem_used_pct():
+def mem_pct():
     d = {}
-    with open("/proc/meminfo", "r", encoding="utf-8") as f:
-        for line in f:
-            k, v = line.split(":", 1)
-            d[k] = int(v.strip().split()[0])
+    with open("/proc/meminfo") as f:
+        for l in f:
+            k, v = l.split(":")
+            d[k] = int(v.split()[0])
     return 100.0 * (d["MemTotal"] - d["MemAvailable"]) / d["MemTotal"]
 
 
 def temp_c():
     try:
-        with open("/sys/class/thermal/thermal_zone0/temp", "r", encoding="utf-8") as f:
-            return int(f.read().strip()) / 1000.0
+        return int(open("/sys/class/thermal/thermal_zone0/temp").read()) / 1000
     except Exception:
         return float("nan")
 
 
 def throttled():
     try:
-        out = subprocess.run(
-            ["vcgencmd", "get_throttled"],
-            capture_output=True, text=True, timeout=2
-        ).stdout.strip()
-        return out.split("=")[-1] if "=" in out else out
+        o = subprocess.run(["vcgencmd", "get_throttled"], capture_output=True,
+                           text=True, timeout=2).stdout.strip()
+        return o.split("=")[-1]
     except Exception:
         return "n/a"
 
 
-def ring_size_for_resolution(w, h):
-    # 避免 512MB 内存被大分辨率环形缓冲撑爆
-    if (w, h) == (640, 480):
-        return 32
-    if (w, h) == (1296, 972):
-        return 12
-    return 8  # 1920x1080
-
-
-def wait_ms_for_resolution(w, h):
-    # 触发后等待 1~2 帧，让“触发后帧”进入缓冲，提升最近匹配概率
-    # 640x480 标称高帧率，等待可短；高分辨率可稍长
-    if (w, h) == (640, 480):
-        return 35.0
-    if (w, h) == (1296, 972):
-        return 45.0
-    return 55.0  # 1920x1080
-
-
-class FrameRing:
-    """
-    后台持续采帧到环形缓冲:
-      每项: (sensor_ts_ns, host_capture_ns, frame_array)
-    """
-    def __init__(self, picam2, maxlen):
-        self.cam = picam2
-        self.buf = deque(maxlen=maxlen)
+class Ring:
+    """只存引用: (sensor_ts, host_ns, ndarray)。不转色,不编码。"""
+    def __init__(self, cam, n):
+        self.cam, self.buf = cam, deque(maxlen=n)
         self.lock = threading.Lock()
-        self.running = False
-        self.th = None
+        self.run = False
         self.fps = 0.0
+        self.last_host = 0
+        self.th = None
 
     def start(self):
-        self.running = True
+        self.run = True
         self.th = threading.Thread(target=self._loop, daemon=True)
         self.th.start()
 
     def stop(self):
-        self.running = False
+        self.run = False
         if self.th:
-            self.th.join(timeout=3)
+            self.th.join(timeout=2)
         with self.lock:
             self.buf.clear()
 
     def _loop(self):
         last = time.monotonic()
-        while self.running:
+        while self.run:
             try:
-                req = self.cam.capture_request()
+                req = self.cam.capture_request(wait=True)
             except Exception:
                 break
-            host_ns = now_ns()
+            host = now_ns()
             try:
-                arr = req.make_array("main")
                 md = req.get_metadata() or {}
-                sensor_ts = md.get("SensorTimestamp", host_ns)
+                ts = int(md.get("SensorTimestamp", host))
+                arr = req.make_array("main").copy()  # 必须拷贝: release 后缓冲会被复用
             finally:
                 req.release()
-
             with self.lock:
-                self.buf.append((int(sensor_ts), int(host_ns), arr))
+                self.buf.append((ts, host, arr))
+                self.last_host = host
+            t = time.monotonic()
+            inst = 1.0 / max(t - last, 1e-6)
+            self.fps = inst if self.fps == 0 else 0.9 * self.fps + 0.1 * inst
+            last = t
 
-            cur = time.monotonic()
-            inst = 1.0 / max(cur - last, 1e-6)
-            self.fps = 0.9 * self.fps + 0.1 * inst if self.fps > 0 else inst
-            last = cur
-
-    def snapshot(self):
+    def snap(self):
         with self.lock:
             return list(self.buf)
 
 
-def pick_closest_index(frames, trigger_ns):
-    # 按 |sensor_ts - trigger| 最小选帧
-    best_i = None
-    best_d = None
-    for i, (sensor_ts, _, _) in enumerate(frames):
-        d = abs(sensor_ts - trigger_ns)
-        if best_d is None or d < best_d:
-            best_d = d
-            best_i = i
-    return best_i
-
-
-def save_jpeg_from_frame(frame_rgb, quality, path):
-    # Picamera2 RGB888 在这里按 BGR 排列处理，转成 RGB 再存
-    img = Image.fromarray(frame_rgb[:, :, ::-1])
+def yuv420_to_jpeg(arr, w, h, q):
+    """YUV420(I420, 形状 (h*3/2, w)) -> 仅取亮度+粗略转换; 用 Pillow 的 YCbCr 合成"""
+    y = arr[:h, :w]
+    u = arr[h:h + h // 4, :].reshape(h // 2, w // 2)
+    v = arr[h + h // 4:, :].reshape(h // 2, w // 2)
+    Y = Image.fromarray(y, "L")
+    U = Image.fromarray(np.ascontiguousarray(u), "L").resize((w, h), Image.BILINEAR)
+    V = Image.fromarray(np.ascontiguousarray(v), "L").resize((w, h), Image.BILINEAR)
+    img = Image.merge("YCbCr", (Y, U, V)).convert("RGB")
     bio = io.BytesIO()
-    img.save(bio, format="JPEG", quality=quality)
-    data = bio.getvalue()
-    t0 = time.monotonic()
-    with open(path, "wb") as f:
-        f.write(data)  # 不 fsync
-    t1 = time.monotonic()
-    return len(data), (t1 - t0) * 1000.0
+    img.save(bio, "JPEG", quality=q)
+    return bio.getvalue()
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--blocked-level", type=int, choices=[0, 1], default=0)
-    ap.add_argument("--debounce-ms", type=float, default=5.0)
+    ap.add_argument("--debounce-ms", type=float, default=3.0)
     ap.add_argument("--out", default=os.path.expanduser("~/ir_bench_results"))
-    ap.add_argument("--shots-per-config", type=int, default=SHOTS_PER_CONFIG)
     args = ap.parse_args()
-
     blocked = args.blocked_level
+
     os.makedirs(args.out, exist_ok=True)
     for _, p in STORAGES:
         os.makedirs(p, exist_ok=True)
-
     GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-    configs = [(res, q, st) for res in RESOLUTIONS for st in STORAGES for q in QUALITIES]
-    total_trigger_count = len(configs) * args.shots_per_config
-    done = 0
-
+    configs = [(r, q, s) for r in RESOLUTIONS for s in STORAGES for q in QUALITIES]
+    total = len(configs) * SHOTS
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     csv_path = os.path.join(args.out, f"bench_align_{stamp}.csv")
-    fields = [
-        "config", "res", "quality", "storage", "shot", "variant",
-        "trigger_to_frame_ms", "best_frame_age_ms", "sensor_delta_to_trigger_ms",
-        "wait_after_trigger_ms", "candidate_count",
-        "encode_ms", "write_ms", "trigger_to_file_ms",
-        "file_kb", "ring_fps", "ring_size", "cpu_pct", "mem_pct", "temp_c", "throttled", "file"
-    ]
-
+    fields = ["config", "res", "quality", "storage", "shot",
+              "frame_age_ms", "trigger_to_frame_ms", "wait_ms", "ring_n", "ring_fps",
+              "cpu_pct", "mem_pct", "temp_c", "throttled",
+              "encode_ms", "write_ms", "file_kb", "file"]
     cf = open(csv_path, "w", newline="", encoding="utf-8")
     cw = csv.DictWriter(cf, fieldnames=fields)
     cw.writeheader()
+    print(f"共 {len(configs)} 组, {total} 次遮挡。CSV: {csv_path}\n")
 
-    all_rows = []
-
-    picam2 = None
+    rows = []
+    cam = None
     ring = None
-    cur_res = None
-
-    print(f"共 {len(configs)} 组配置, {total_trigger_count} 次遮挡触发。")
-    print(f"每次触发保存 3 张: prev / closest / next")
-    print(f"结果 CSV: {csv_path}\n")
-
+    cur = None
+    done = 0
     try:
         for ci, ((w, h), q, (sname, sdir)) in enumerate(configs, 1):
-            ring_size = ring_size_for_resolution(w, h)
-            wait_ms = wait_ms_for_resolution(w, h)
-
-            if cur_res != (w, h):
+            if cur != (w, h):
                 if ring:
                     ring.stop()
-                if picam2:
-                    picam2.stop()
-                    picam2.close()
-
-                picam2 = Picamera2()
-                cfg = picam2.create_video_configuration(
-                    main={"size": (w, h), "format": "RGB888"},
-                    buffer_count=max(4, min(8, ring_size // 2))
-                )
-                picam2.configure(cfg)
-                picam2.start()
-                time.sleep(1.0)  # AE/AWB 稳定
-
-                ring = FrameRing(picam2, maxlen=ring_size)
+                if cam:
+                    try:
+                        cam.stop()
+                        cam.close()
+                    except Exception:
+                        pass
+                    cam = None
+                gc.collect()
+                print("  (切换分辨率, 冷却 3 秒...)")
+                time.sleep(3)
+                cam = Picamera2()
+                cfg = cam.create_video_configuration(
+                    main={"size": (w, h), "format": "YUV420"}, buffer_count=4)
+                cam.configure(cfg)
+                cam.start()
+                time.sleep(1.0)
+                ring = Ring(cam, RING[(w, h)])
                 ring.start()
                 time.sleep(0.5)
-                cur_res = (w, h)
+                cur = (w, h)
 
-            cname = f"{w}x{h}_q{q}_{sname}"
-            print(f"=== 配置 {ci}/{len(configs)}: {cname} | ring={ring_size}, wait={wait_ms:.0f}ms, fps≈{ring.fps:.1f} ===")
+            name = f"{w}x{h}_q{q}_{sname}"
+            wait_ms = WAIT_MS[(w, h)]
+            print(f"=== 配置 {ci}/{len(configs)}: {name} | ring={RING[(w,h)]} wait={wait_ms:.0f}ms fps≈{ring.fps:.1f} ===")
+            pending = []  # 本组选中的帧, 稍后离线编码
             cpu_prev = cpu_times()
 
-            for shot in range(1, args.shots_per_config + 1):
-                # 等待恢复到未遮挡，避免连触发
+            shot = 0
+            while shot < SHOTS:
                 while GPIO.input(PIN) == blocked:
                     time.sleep(0.003)
-
-                print(f"  [{done+1}/{total_trigger_count}] 请遮挡（本组第 {shot}/{args.shots_per_config} 次）...", flush=True)
-
+                print(f"  [{done+1}/{total}] 请遮挡 (本组第 {shot+1}/{SHOTS} 次) ...", flush=True)
                 _, cpu_prev = cpu_pct(cpu_prev)
 
-                # 等触发 + 消抖
                 while True:
                     while GPIO.input(PIN) != blocked:
                         time.sleep(0.0005)
                     t_det = time.monotonic()
-                    t_det_ns = now_ns()
-
+                    t_ns = now_ns()
                     ok = True
-                    t_end = t_det + args.debounce_ms / 1000.0
-                    while time.monotonic() < t_end:
+                    while time.monotonic() - t_det < args.debounce_ms / 1000:
                         if GPIO.input(PIN) != blocked:
                             ok = False
                             break
@@ -287,139 +218,104 @@ def main():
                     if ok:
                         break
 
-                # 关键改动：触发后等待一段时间，再取 ring 快照并做最近匹配
-                time.sleep(wait_ms / 1000.0)
-                frames = ring.snapshot()
+                # 看门狗: 触发瞬间缓冲是否还在更新
+                stale = (t_ns - ring.last_host) / 1e6 if ring.last_host else 1e9
+                time.sleep(wait_ms / 1000)
+                frames = ring.snap()
+                t_pick_ns = now_ns()
+                fresh = (t_pick_ns - ring.last_host) / 1e6
 
-                if not frames:
-                    print("    [ERR] ring 为空，跳过")
+                if not frames or fresh > STALE_MS or stale > STALE_MS:
+                    print(f"      [无效] 采帧停滞 (距上帧 {fresh:.0f}ms), 请移开后重试")
+                    while GPIO.input(PIN) == blocked:
+                        time.sleep(0.003)
+                    time.sleep(0.5)
                     continue
 
-                best_i = pick_closest_index(frames, t_det_ns)
-                if best_i is None:
-                    print("    [ERR] 未选出最近帧，跳过")
-                    continue
+                bi = min(range(len(frames)), key=lambda i: abs(frames[i][0] - t_ns))
+                ts, host, arr = frames[bi]
+                age = (t_ns - ts) / 1e6  # 正=帧早于触发, 负=帧晚于触发
+                t2f = (host - t_ns) / 1e6
+                c, cpu_prev = cpu_pct(cpu_prev)
 
-                # 选择 prev / closest / next
-                indices = [max(0, best_i - 1), best_i, min(len(frames) - 1, best_i + 1)]
-                labels = ["prev", "closest", "next"]
-
-                # 先统计最近帧对齐指标
-                best_sensor_ts, best_host_ns, _ = frames[best_i]
-                best_age_ms = (t_det_ns - best_sensor_ts) / 1e6  # 正值=帧早于触发
-                trig_to_frame_ms = (best_host_ns - t_det_ns) / 1e6 + args.debounce_ms
-
-                # 保存3张
-                for idx, label in zip(indices, labels):
-                    sensor_ts, host_ns, arr = frames[idx]
-
-                    t_enc0 = time.monotonic()
-                    fname = f"{cname}_shot{shot}_{label}.jpg"
-                    fpath = os.path.join(sdir, fname)
-                    size_bytes, write_ms = save_jpeg_from_frame(arr, q, fpath)
-                    t_enc1 = time.monotonic()
-                    encode_ms = (t_enc1 - t_enc0) * 1000.0 - write_ms
-
-                    cpu, cpu_prev = cpu_pct(cpu_prev)
-
-                    row = {
-                        "config": cname,
-                        "res": f"{w}x{h}",
-                        "quality": q,
-                        "storage": sname,
-                        "shot": shot,
-                        "variant": label,
-                        "trigger_to_frame_ms": round(trig_to_frame_ms, 2),
-                        "best_frame_age_ms": round(best_age_ms, 2),
-                        "sensor_delta_to_trigger_ms": round((sensor_ts - t_det_ns) / 1e6, 2),
-                        "wait_after_trigger_ms": round(wait_ms, 1),
-                        "candidate_count": len(frames),
-                        "encode_ms": round(encode_ms, 2),
-                        "write_ms": round(write_ms, 2),
-                        "trigger_to_file_ms": round((time.monotonic() - t_det) * 1000.0 + args.debounce_ms, 2),
-                        "file_kb": round(size_bytes / 1024.0, 1),
-                        "ring_fps": round(ring.fps, 1),
-                        "ring_size": ring_size,
-                        "cpu_pct": round(cpu, 1),
-                        "mem_pct": round(mem_used_pct(), 1),
-                        "temp_c": round(temp_c(), 1),
-                        "throttled": throttled(),
-                        "file": fpath,
-                    }
-                    cw.writerow(row)
-                    cf.flush()
-                    all_rows.append(row)
-
+                pending.append({
+                    "arr": arr, "shot": shot + 1, "age": age, "t2f": t2f,
+                    "cpu": c, "mem": mem_pct(), "temp": temp_c(), "thr": throttled(),
+                    "fps": ring.fps,
+                })
+                shot += 1
                 done += 1
-                print(
-                    f"      完成: closest帧龄 {best_age_ms:.1f}ms | "
-                    f"取帧指标 {trig_to_frame_ms:.1f}ms | 候选{len(frames)}帧 | fps≈{ring.fps:.1f}"
-                )
-
-                # 等待遮挡释放
+                print(f"      完成: 帧龄 {age:+.1f}ms | 取帧 {t2f:.1f}ms | 候选 {len(frames)} 帧 | "
+                      f"CPU {c:.0f}% | {temp_c():.1f}°C")
                 while GPIO.input(PIN) == blocked:
                     time.sleep(0.003)
-                time.sleep(0.25)
+                time.sleep(0.2)
+
+            # ---- 离线编码(不影响测量) ----
+            print("  (离线编码保存中...)")
+            for p in pending:
+                t0 = time.monotonic()
+                data = yuv420_to_jpeg(p["arr"], w, h, q)
+                t1 = time.monotonic()
+                fpath = os.path.join(sdir, f"{name}_{p['shot']}.jpg")
+                with open(fpath, "wb") as f:
+                    f.write(data)
+                t2 = time.monotonic()
+                row = {
+                    "config": name, "res": f"{w}x{h}", "quality": q, "storage": sname,
+                    "shot": p["shot"], "frame_age_ms": round(p["age"], 2),
+                    "trigger_to_frame_ms": round(p["t2f"], 2), "wait_ms": wait_ms,
+                    "ring_n": RING[(w, h)], "ring_fps": round(p["fps"], 1),
+                    "cpu_pct": round(p["cpu"], 1), "mem_pct": round(p["mem"], 1),
+                    "temp_c": round(p["temp"], 1), "throttled": p["thr"],
+                    "encode_ms": round((t1 - t0) * 1000, 1),
+                    "write_ms": round((t2 - t1) * 1000, 1),
+                    "file_kb": round(len(data) / 1024, 1), "file": fpath,
+                }
+                cw.writerow(row)
+                cf.flush()
+                rows.append(row)
+            pending.clear()
+            gc.collect()
 
     except KeyboardInterrupt:
-        print("\n用户中断，输出已完成数据汇总。")
+        print("\n用户中断, 输出已完成部分汇总")
     finally:
         if ring:
             ring.stop()
-        if picam2:
+        if cam:
             try:
-                picam2.stop()
-                picam2.close()
+                cam.stop()
+                cam.close()
             except Exception:
                 pass
         GPIO.cleanup()
         cf.close()
 
-    # 汇总（只看 closest）
-    closest = [r for r in all_rows if r["variant"] == "closest"]
-    if not closest:
-        print("没有可汇总数据。")
+    if not rows:
+        print("无数据")
         return
+    g = {}
+    for r in rows:
+        g.setdefault(r["config"], []).append(r)
+    print("\n" + "=" * 84)
+    print("汇总 (|帧龄| 越小, 画面越贴近触发瞬间)")
+    print("=" * 84)
+    print(f"{'配置':<22}{'|帧龄|均值':>10}{'|帧龄|最大':>10}{'带符号均值':>11}{'fps':>7}{'CPU%':>7}{'编码ms':>9}")
+    summ = []
+    for n, rs in g.items():
+        ages = [r["frame_age_ms"] for r in rs]
+        summ.append((n, statistics.mean(abs(a) for a in ages), max(abs(a) for a in ages),
+                     statistics.mean(ages), statistics.mean(r["ring_fps"] for r in rs),
+                     statistics.mean(r["cpu_pct"] for r in rs),
+                     statistics.mean(r["encode_ms"] for r in rs)))
+    for s in sorted(summ, key=lambda x: x[1]):
+        print(f"{s[0]:<22}{s[1]:>10.1f}{s[2]:>10.1f}{s[3]:>11.1f}{s[4]:>7.1f}{s[5]:>7.0f}{s[6]:>9.0f}")
+    best = min(summ, key=lambda x: x[1])
+    print(f"\n最佳时间对齐: {best[0]} (|帧龄|均值 {best[1]:.1f}ms)")
+    print(f"CSV: {csv_path}")
+    print("照片: SD=~/ir_bench, tmpfs=/dev/shm/ir_bench (tmpfs 重启即丢)")
 
-    groups = {}
-    for r in closest:
-        groups.setdefault(r["config"], []).append(r)
-
-    summary = []
-    for name, rs in groups.items():
-        ages = [abs(float(x["best_frame_age_ms"])) for x in rs]
-        t2f = [float(x["trigger_to_frame_ms"]) for x in rs]
-        t2file = [float(x["trigger_to_file_ms"]) for x in rs]
-        fps = [float(x["ring_fps"]) for x in rs]
-        summary.append({
-            "config": name,
-            "age_abs_mean": statistics.mean(ages),
-            "age_abs_max": max(ages),
-            "t2f_mean": statistics.mean(t2f),
-            "t2file_mean": statistics.mean(t2file),
-            "fps_mean": statistics.mean(fps),
-        })
-
-    print("\n" + "=" * 86)
-    print("汇总（仅 closest，按 |帧龄| 均值升序）")
-    print("=" * 86)
-    print(f"{'配置':<24}{'|帧龄|均值':>10}{'|帧龄|最大':>10}{'取帧均值':>10}{'落盘均值':>10}{'fps':>8}")
-    for s in sorted(summary, key=lambda x: x["age_abs_mean"]):
-        print(
-            f"{s['config']:<24}"
-            f"{s['age_abs_mean']:>10.1f}"
-            f"{s['age_abs_max']:>10.1f}"
-            f"{s['t2f_mean']:>10.1f}"
-            f"{s['t2file_mean']:>10.1f}"
-            f"{s['fps_mean']:>8.1f}"
-        )
-
-    best_align = min(summary, key=lambda x: x["age_abs_mean"])
-    best_t2f = min(summary, key=lambda x: x["t2f_mean"])
-    print(f"\n最优时间对齐: {best_align['config']} (|帧龄|均值 {best_align['age_abs_mean']:.1f}ms)")
-    print(f"最快取帧指标: {best_t2f['config']} (trigger->frame 均值 {best_t2f['t2f_mean']:.1f}ms)")
-    print(f"\n详细 CSV: {csv_path}")
-    print("图片目录: SD=~/ir_bench, tmpfs=/dev/shm/ir_bench (tmpfs 重启即丢)")
 
 if __name__ == "__main__":
     main()
