@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+"""
+光耦/光电开关连接测试 (树莓派 Zero 2W)
+接线: 光耦 OUT -> GPIO2 (物理引脚3), 光耦 GND -> GND
+GPIO2 有板载 1.8k 上拉, 不需要再启用软件上拉。
+每次状态变化都会打印。按 Ctrl+C 退出。
+"""
+import time
+from datetime import datetime
+
+from gpiozero import DigitalInputDevice
+
+PIN = 2  # BCM 编号
+
+# pull_up=None: 使用 GPIO2 的硬件上拉, 不改动内部上下拉设置
+sensor = DigitalInputDevice(PIN, pull_up=None, active_state=True)
+
+
+def now():
+    return datetime.now().strftime("%H:%M:%S.%f")[:-3]
+
+
+def describe(value):
+    if value:
+        return "HIGH (高电平) -> 光耦输出断开"
+    return "LOW  (低电平) -> 光耦输出导通"
+
+
+last = sensor.value
+print(f"[{now()}] 初始状态: {describe(last)}")
+print("等待状态变化... (Ctrl+C 退出)")
+
+change_count = 0
+try:
+    while True:
+        cur = sensor.value
+        if cur != last:
+            change_count += 1
+            print(f"[{now()}] 状态变化 #{change_count}: {describe(cur)}")
+            last = cur
+        time.sleep(0.005)  # 5ms 轮询, 兼容性最好
+except KeyboardInterrupt:
+    print(f"\n退出。共检测到 {change_count} 次状态变化。")
+    if change_count == 0:
+        print("提示: 没有检测到变化, 请检查接线, 或确认光电开关已上电并被触发。")
+finally:
+    sensor.close()
