@@ -10,7 +10,7 @@ from datetime import datetime
 
 from gpiozero import DigitalInputDevice
 
-PIN = 2  # BCM 编号
+PIN = 13  # BCM 编号
 
 # pull_up=None: 使用 GPIO2 的硬件上拉, 不改动内部上下拉设置
 sensor = DigitalInputDevice(PIN, pull_up=None, active_state=True)
@@ -37,7 +37,7 @@ try:
         if cur != last:
             change_count += 1
             print(f"[{now()}] 状态变化 #{change_count}: {describe(cur)}")
-            last = cur
+l            last = cur
         time.sleep(0.005)  # 5ms 轮询, 兼容性最好
 except KeyboardInterrupt:
     print(f"\n退出。共检测到 {change_count} 次状态变化。")
