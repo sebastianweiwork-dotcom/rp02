@@ -1,25 +1,4 @@
-[INFO] session_dir: /home/rp02/hsv trigger 2 test/20261028_161210_413
-[INFO] csv_path   : /home/rp02/hsv trigger 2 test/20261028_161210_413/hsv_log.csv
-[4:57:13.742192071] [5316]  INFO Camera camera_manager.cpp:340 libcamera v0.7.2+rpt20260817
-[4:57:14.058794273] [5321]  INFO RPI pipeline_base.cpp:1133 Using configuration file '/usr/share/libcamera/pipeline/rpi/vc4/rpi_apps.yaml'
-[4:57:14.568246483] [5321]  INFO IPAProxy ipa_proxy.cpp:184 Using tuning file /usr/share/libcamera/ipa/rpi/vc4/ov5647.json
-[4:57:14.609062748] [5321]  INFO Camera camera_manager.cpp:223 Adding camera '/base/soc/i2c0mux/i2c@1/ov5647@36' for pipeline handler rpi/vc4
-[4:57:14.609219469] [5321]  INFO RPI vc4.cpp:445 Registered camera /base/soc/i2c0mux/i2c@1/ov5647@36 to Unicam device /dev/media0 and ISP device /dev/media1
-[4:57:14.630601570] [5316]  INFO Camera camera.cpp:1216 configuring streams: (0) 1920x1080-YUV420/Rec709 (1) 1920x1080-SGBRG10_CSI2P/RAW
-[4:57:14.631552413] [5321]  INFO RPI vc4.cpp:620 Sensor: /base/soc/i2c0mux/i2c@1/ov5647@36 - Selected sensor format: 1920x1080-SGBRG10_1X10/RAW - Selected unicam format: 1920x1080-pGAA/RAW
-[INFO] Camera started.
-[INFO] Capture: 1920x1080 @ 30fps, format=YUV420
-[INFO] ROI center=(960, 540), roi_n=9
-[INFO] Hue trigger range=[159, 171]
-[INFO] Frame buffer size=90
-[INFO] Cooldown=3.0s
-[INFO] Press Ctrl+C to stop.
-[STATUS] frame=1 H=56.91 S=3.00 V=235.25 buffer=1/90 CPU=26.6% MEM=76.0%(240/415MB) TEMP=47.2C
-[STATUS] frame=3 H=57.36 S=6.52 V=135.85 buffer=3/90 CPU=61.7% MEM=80.1%(256/415MB) TEMP=47.2C
-[STATUS] frame=13 H=35.36 S=9.32 V=135.86 buffer=13/90 CPU=90.4% MEM=89.4%(296/415MB) TEMP=47.8C
-[STATUS] frame=22 H=26.01 S=16.00 V=137.65 buffer=22/90 CPU=53.0% MEM=93.8%(327/415MB) TEMP=47.2C
-[4:57:22.675282347] [5321]  WARN V4L2 v4l2_videodevice.cpp:2096 /dev/video0[12:cap]: Dequeue timer of 1000000.00us has expired!
-[4:57:22.767331028] [5321] ERROR RPI pipeline_base.cpp:1371 Camera frontend has timed out!
-[4:57:22.767438686] [5321] ERROR RPI pipeline_base.cpp:1372 Please check that your camera sensor connector is attached securely.
-[4:57:22.767474311] [5321] ERROR RPI pipeline_base.cpp:1373 Alternatively, try another cable and/or sensor.
-
+vcgencmd get_throttled
+journalctl -b -1 -p warning | tail -n 50
+dmesg | grep -iE "out of memory|oom|under-voltage|killed" 
+free -m; swapon --show
